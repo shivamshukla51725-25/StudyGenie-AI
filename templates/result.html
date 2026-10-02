@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>StudyGenie AI - Results</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23D9A441' d='M50 5 L58 42 L95 50 L58 58 L50 95 L42 58 L5 50 L42 42 Z'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #1F2A38;
+            --paper: #F6F1E7;
+            --paper-line: #DCD3BE;
+            --mustard: #D9A441;
+            --mustard-dark: #BD8A2E;
+            --text-dark: #2B2118;
+            --text-light: #F6F1E7;
+            --muted: #6B7785;
+            --correct: #3B7A75;
+            --correct-bg: #E1EEEC;
+            --wrong: #B6462F;
+            --wrong-bg: #F6E3DD;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--ink); }
+        header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 22px 30px;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+        header .logo { width: 20px; height: 20px; }
+        header .brand { font-family: 'Source Serif 4', serif; color: var(--text-light); font-size: 15px; font-weight: 700; }
+
+        .container { max-width: 640px; margin: 0 auto; padding: 10px 20px 80px; }
+        h1 { font-family: 'Source Serif 4', serif; color: var(--text-light); font-size: 32px; margin-bottom: 4px; }
+        .section-label { color: var(--mustard); font-size: 13px; font-weight: 600; margin: 40px 0 16px; }
+
+        .flashcard {
+            background: var(--paper);
+            border-radius: 4px;
+            padding: 20px 24px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+            transition: transform 0.15s ease;
+        }
+        .flashcard:hover { transform: translateY(-2px); }
+        .flashcard .q { font-weight: 600; color: var(--text-dark); font-size: 15px; }
+        .flashcard .a { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--paper-line); color: var(--text-dark); font-size: 14px; line-height: 1.5; }
+        .flashcard.flipped .a { display: block; }
+        .flashcard .hint { font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+        .progress-wrap {
+            background: var(--ink-light, #2C3B4F);
+            border-radius: 20px;
+            height: 6px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--mustard);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .progress-text { color: var(--muted); font-size: 12px; margin-bottom: 14px; }
+
+        .quiz-box { background: var(--paper); border-radius: 4px; padding: 20px 24px; margin-bottom: 14px; box-shadow: 0 6px 16px rgba(0,0,0,0.18); }
+        .quiz-box .q { font-weight: 600; color: var(--text-dark); font-size: 15px; margin-bottom: 12px; }
+        .option {
+            display: block; width: 100%; text-align: left; padding: 11px 14px; margin: 6px 0;
+            border: 1px solid var(--paper-line); border-radius: 3px; background: #fff;
+            font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text-dark); cursor: pointer;
+        }
+        .option.correct { background: var(--correct-bg); border-color: var(--correct); color: var(--correct); font-weight: 600; }
+        .option.wrong { background: var(--wrong-bg); border-color: var(--wrong); color: var(--wrong); }
+
+        #score { text-align: center; color: var(--text-light); font-family: 'Source Serif 4', serif; font-size: 20px; margin-top: 30px; }
+
+        .back-btn {
+            display: block; width: fit-content; margin: 36px auto 0; padding: 12px 24px;
+            background: var(--mustard); color: var(--ink); text-decoration: none;
+            border-radius: 3px; font-weight: 600; font-size: 14px;
+        }
+        footer { text-align: center; padding: 20px; color: var(--muted); font-size: 12px; }
+    </style>
+</head>
+<body>
+    <header>
+        <svg class="logo" viewBox="0 0 100 100"><path fill="#D9A441" d="M50 5 L58 42 L95 50 L58 58 L50 95 L42 58 L5 50 L42 42 Z"/></svg>
+        <span class="brand">StudyGenie AI</span>
+    </header>
+
+    <div class="container">
+        <h1>Your study materials are ready</h1>
+
+        <div class="section-label">FLASHCARDS — click to flip</div>
+        {% for card in flashcards %}
+        <div class="flashcard" onclick="this.classList.toggle('flipped')">
+            <div class="q">{{ card.question }}</div>
+            <div class="a">{{ card.answer }}</div>
+            <div class="hint">Tap to reveal answer</div>
+        </div>
+        {% endfor %}
+
+        <div class="section-label">QUIZ — select an answer</div>
+        <div class="progress-text" id="progressText">0 of {{ quiz|length }} answered</div>
+        <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+
+        <div id="quiz-container">
+            {% for q in quiz %}
+            <div class="quiz-box" data-correct="{{ q.correct_answer }}">
+                <div class="q">{{ loop.index }}. {{ q.question }}</div>
+                {% for option in q.options %}
+                <button class="option" onclick="checkAnswer(this)">{{ option }}</button>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div id="score"></div>
+
+        <a class="back-btn" href="/">Upload another PDF</a>
+    </div>
+
+    <footer>Built by Shivam Shukla · College Minor Project</footer>
+
+    <script>
+        let answered = 0;
+        let correctCount = 0;
+        const totalQuestions = {{ quiz|length }};
+
+        function checkAnswer(button) {
+            const quizBox = button.parentElement;
+            if (quizBox.classList.contains('answered')) return;
+            quizBox.classList.add('answered');
+
+            const correctAnswer = quizBox.getAttribute('data-correct');
+            const allOptions = quizBox.querySelectorAll('.option');
+
+            allOptions.forEach(opt => {
+                if (opt.textContent === correctAnswer) opt.classList.add('correct');
+            });
+
+            if (button.textContent !== correctAnswer) {
+                button.classList.add('wrong');
+            } else {
+                correctCount++;
+            }
+
+            answered++;
+            document.getElementById('progressText').textContent = answered + " of " + totalQuestions + " answered";
+            document.getElementById('progressBar').style.width = (answered / totalQuestions * 100) + "%";
+
+            if (answered === totalQuestions) {
+                document.getElementById('score').textContent = "Score: " + correctCount + " / " + totalQuestions;
+            }
+        }
+    </script>
+</body>
+</html>

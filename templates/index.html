@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>StudyGenie AI</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23D9A441' d='M50 5 L58 42 L95 50 L58 58 L50 95 L42 58 L5 50 L42 42 Z'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #1F2A38;
+            --ink-light: #2C3B4F;
+            --paper: #F6F1E7;
+            --paper-line: #DCD3BE;
+            --mustard: #D9A441;
+            --mustard-dark: #BD8A2E;
+            --text-dark: #2B2118;
+            --text-light: #F6F1E7;
+            --muted: #9AA7B5;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--ink);
+            background-image: radial-gradient(circle at 15% 20%, var(--ink-light) 0%, var(--ink) 55%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 22px 30px;
+        }
+        header .logo { width: 22px; height: 22px; }
+        header .brand {
+            font-family: 'Source Serif 4', serif;
+            color: var(--text-light);
+            font-size: 17px;
+            font-weight: 700;
+        }
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 20px 60px;
+        }
+        .wrap { max-width: 460px; width: 100%; }
+        .eyebrow { color: var(--mustard); font-size: 13px; letter-spacing: 0.04em; margin-bottom: 8px; }
+        h1 {
+            font-family: 'Source Serif 4', serif;
+            color: var(--text-light);
+            font-size: 38px;
+            line-height: 1.15;
+            margin: 0 0 14px;
+        }
+        .sub { color: var(--muted); font-size: 15px; line-height: 1.6; margin-bottom: 32px; max-width: 38ch; }
+        .card {
+            background: var(--paper);
+            border-radius: 4px;
+            padding: 32px 28px;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+        }
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 36px;
+            width: 1px; height: 100%;
+            background: #E3B3A8;
+            opacity: 0.5;
+        }
+        label { display: block; font-size: 13px; font-weight: 600; color: var(--text-dark); margin-bottom: 6px; }
+        select, input[type="file"] {
+            width: 100%;
+            padding: 11px 12px;
+            margin-bottom: 20px;
+            border: 1px solid var(--paper-line);
+            border-radius: 3px;
+            background: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+        button {
+            width: 100%;
+            background: var(--ink);
+            color: var(--text-light);
+            border: none;
+            padding: 14px;
+            border-radius: 3px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        button:hover { background: var(--ink-light); }
+        #loading { display: none; margin-top: 24px; text-align: center; }
+        .spinner {
+            border: 3px solid var(--paper-line);
+            border-top: 3px solid var(--mustard-dark);
+            border-radius: 50%;
+            width: 28px; height: 28px;
+            animation: spin 0.9s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #loading p { color: var(--text-dark); font-size: 14px; margin: 0; }
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <svg class="logo" viewBox="0 0 100 100"><path fill="#D9A441" d="M50 5 L58 42 L95 50 L58 58 L50 95 L42 58 L5 50 L42 42 Z"/></svg>
+        <span class="brand">StudyGenie AI</span>
+    </header>
+
+    <main>
+        <div class="wrap">
+            <div class="eyebrow">AI Study Assistant</div>
+            <h1>Turn your notes into flashcards &amp; quizzes</h1>
+            <p class="sub">Upload a PDF — typed or scanned — and get ready-to-study flashcards and a quiz in seconds.</p>
+
+            <div class="card">
+                <form id="uploadForm" action="/generate" method="POST" enctype="multipart/form-data">
+                    <label for="language">Output language</label>
+                    <select name="language" id="language">
+                        <option value="English">English</option>
+                        <option value="Hindi">Hindi</option>
+                    </select>
+
+                    <label for="pdf_file">Your PDF notes</label>
+                    <input type="file" name="pdf_file" id="pdf_file" accept=".pdf" required>
+
+                    <button type="submit" id="submitBtn">Generate flashcards &amp; quiz</button>
+                </form>
+
+                <div id="loading">
+                    <div class="spinner"></div>
+                    <p>Reading your notes and generating study material…</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>Built by Shivam Shukla · College Minor Project</footer>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function() {
+            document.getElementById('submitBtn').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+        });
+    </script>
+</body>
+</html>

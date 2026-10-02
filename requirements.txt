@@ -1,0 +1,6 @@
+flask
+PyPDF2
+google-generativeai
+pytesseract
+PyMuPDF
+Pillow
